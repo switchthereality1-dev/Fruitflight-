@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fruitflight">
+<meta name="theme-color" content="#87ceeb">
+<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22Fruitflight%22%2C%22short_name%22%3A%22Fruitflight%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22fullscreen%22%2C%22orientation%22%3A%22landscape%22%2C%22background_color%22%3A%22%2387ceeb%22%2C%22theme_color%22%3A%22%2387ceeb%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%253D%2527http%253A%2F%2Fwww.w3.org%2F2000%2Fsvg%2527%2520viewBox%253D%25270%25200%2520512%2520512%2527%253E%253Crect%2520width%253D%2527512%2527%2520height%253D%2527512%2527%2520rx%253D%2527112%2527%2520fill%253D%2527%252387ceeb%2527%2F%253E%253Ctext%2520x%253D%2527256%2527%2520y%253D%2527340%2527%2520text-anchor%253D%2527middle%2527%2520font-size%253D%2527300%2527%253E%25E2%259C%2588%25EF%25B8%258F%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%2387ceeb'/%3E%3Ctext x='256' y='340' text-anchor='middle' font-size='300'%3E✈️%3C/text%3E%3C/svg%3E">
+<title>✈️ Fruitflight</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{height:100%;height:100dvh;overflow:hidden;background:#000;font-family:'Courier New',monospace;color:#fff;touch-action:none}
+canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
+#hud{position:fixed;inset:0;pointer-events:none;z-index:10}
+.g{position:absolute;background:rgba(8,20,40,.85);border:3px solid #4fc3f7;border-radius:8px;padding:6px 12px;color:#4fc3f7;font-weight:900;text-shadow:2px 2px 0 #000;letter-spacing:2px;min-width:110px;text-align:center}
+.g .l{font-size:9px;color:#80deea;letter-spacing:3px}
+.g .v{font-size:20px;color:#fff;text-shadow:0 0 10px #4fc3f7,2px 2px 0 #000}
+.g .u{font-size:10px;color:#4fc3f7;margin-left:2px}
+#gS{top:15px;left:15px}#gA{top:15px;right:15px}#gT{bottom:15px;left:15px}#gH{bottom:15px;right:15px}
+#gCam{position:absolute;top:15px;left:50%;transform:translateX(-50%);background:rgba(8,20,40,.85);border:3px solid #66bb6a;border-radius:8px;padding:5px 14px;color:#66bb6a;font-weight:900;font-size:10px;letter-spacing:2px;text-shadow:2px 2px 0 #000}
+#gTitle{position:absolute;top:60px;left:50%;transform:translateX(-50%);font-size:14px;color:#ffd54f;font-weight:900;letter-spacing:6px;text-shadow:2px 2px 0 #000,0 0 15px #ffd54f}
+#crs{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:18px;height:18px;opacity:.6}
+#crs::before,#crs::after{content:'';position:absolute;background:#4fc3f7;box-shadow:0 0 6px #4fc3f7}
+#crs::before{left:50%;top:0;bottom:0;width:2px;transform:translateX(-50%)}
+#crs::after{top:50%;left:0;right:0;height:2px;transform:translateY(-50%)}
+#warn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:26px;color:#ff3030;font-weight:900;text-shadow:3px 3px 0 #000;display:none;animation:bl .4s infinite}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
+#warn.on{display:block}
+.mbtn{position:absolute;border-radius:50%;border:3px solid #fff;color:#fff;font-weight:900;touch-action:none;z-index:20;display:none;align-items:center;justify-content:center;font-family:inherit;text-shadow:2px 2px 0 #000;font-size:13px}
+body.mobile .mbtn{display:flex}
+#bUp{right:150px;bottom:110px;width:65px;height:65px;background:linear-gradient(180deg,#66bb6a,#2e7d32);font-size:18px}
+#bDn{right:150px;bottom:35px;width:65px;height:65px;background:linear-gradient(180deg,#ef5350,#b71c1c);font-size:18px}
+#joy{position:absolute;right:25px;bottom:30px;width:125px;height:125px;border-radius:50%;border:3px solid rgba(255,255,255,.6);background:radial-gradient(circle,rgba(255,255,255,.3),rgba(255,255,255,.1));display:none;touch-action:none;z-index:20}
+body.mobile #joy{display:block}
+#knob{position:absolute;top:50%;left:50%;width:52px;height:52px;background:linear-gradient(180deg,#4fc3f7,#0277bd);border:3px solid #fff;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
+#btnCam{position:absolute;right:25px;top:80px;width:60px;height:60px;border-radius:50%;background:linear-gradient(180deg,#ffd54f,#f9a825);color:#fff;border:3px solid #fff;font-weight:900;font-size:11px;display:none;z-index:20;font-family:inherit;cursor:pointer;text-shadow:2px 2px 0 #000}
+#btnFS{position:absolute;left:25px;top:80px;width:60px;height:60px;border-radius:50%;background:linear-gradient(180deg,#9575cd,#512da8);color:#fff;border:3px solid #fff;font-weight:900;font-size:20px;display:none;z-index:20;font-family:inherit;cursor:pointer;text-shadow:2px 2px 0 #000}
+body.mobile #btnCam,body.mobile #btnFS{display:flex;align-items:center;justify-content:center}
+#btnFSDesktop{position:absolute;left:25px;top:80px;width:55px;height:55px;border-radius:50%;background:linear-gradient(180deg,#9575cd,#512da8);color:#fff;border:3px solid #fff;font-weight:900;font-size:20px;display:flex;z-index:20;font-family:inherit;cursor:pointer;text-shadow:2px 2px 0 #000;align-items:center;justify-content:center}
+body.mobile #btnFSDesktop{display:none}
+.modal{position:fixed;inset:0;background:linear-gradient(135deg,rgba(135,206,235,.9),rgba(100,181,246,.9));display:none;align-items:center;justify-content:center;z-index:100;padding:20px;text-align:center}
+.modal.on{display:flex}
+.mbox{background:linear-gradient(180deg,#fff,#e3f2fd);border:5px solid #fff;border-radius:20px;padding:28px;max-width:440px;width:100%;color:#333}
+.mbox h1{font-size:30px;color:#0288d1;margin-bottom:8px;letter-spacing:3px}
+.mbox h2{font-size:12px;color:#66bb6a;margin-bottom:14px;letter-spacing:4px}
+.mbox p{font-size:12px;color:#555;margin-bottom:12px;line-height:1.7;text-align:left}
+.mbox b{color:#0288d1}
+.btn{display:block;width:100%;padding:14px;margin:8px 0;border:3px solid #fff;border-radius:12px;font-family:inherit;font-size:16px;font-weight:900;cursor:pointer;letter-spacing:1px}
+.btn:active{transform:translateY(2px)}
+.btn.play{background:linear-gradient(180deg,#66bb6a,#388e3c);color:#fff;box-shadow:0 5px 0 #1b5e20}
+.btn.fs{background:linear-gradient(180deg,#9575cd,#512da8);color:#fff;font-size:14px;box-shadow:0 5px 0 #311b92}
+.btn.menu{background:linear-gradient(180deg,#90a4ae,#546e7a);color:#fff;font-size:13px;box-shadow:0 5px 0 #37474f}
+#load{position:fixed;inset:0;background:linear-gradient(135deg,#87ceeb,#4fc3f7,#b2dfdb);display:flex;align-items:center;justify-content:center;z-index:200;color:#fff;font-size:16px;flex-direction:column;gap:20px;font-weight:bold}
+.sp{width:70px;height:70px;border:6px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#toast{position:fixed;top:30%;left:50%;transform:translate(-50%,-50%) scale(.7);background:linear-gradient(180deg,#fff,#e3f2fd);color:#0288d1;padding:14px 28px;border-radius:12px;font-weight:900;font-size:18px;z-index:300;opacity:0;pointer-events:none;transition:.3s;border:4px solid #fff}
+#toast.on{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#install{position:fixed;bottom:12px;left:12px;right:12px;background:linear-gradient(180deg,#fff,#e3f2fd);border:4px solid #4fc3f7;border-radius:14px;padding:14px;z-index:400;display:none;max-width:400px;margin:0 auto;color:#0288d1;text-align:center}
+#install h3{font-size:13px;margin-bottom:6px}
+#install p{font-size:11px;color:#555;margin-bottom:10px}
+#install .bi{display:block;width:100%;padding:12px;background:linear-gradient(180deg,#66bb6a,#388e3c);color:#fff;border:3px solid #fff;border-radius:10px;font-family:inherit;font-weight:900;font-size:14px;margin-bottom:6px;cursor:pointer}
+#install .bn{display:block;width:100%;padding:10px;background:transparent;color:#999;border:2px solid #ccc;border-radius:10px;font-family:inherit;font-weight:900;font-size:12px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div id="hud">
+  <div class="g" id="gS"><div class="l">СКОРОСТЬ</div><div><span class="v" id="sv">0</span><span class="u">км/ч</span></div></div>
+  <div class="g" id="gA"><div class="l">ВЫСОТА</div><div><span class="v" id="av">0</span><span class="u">м</span></div></div>
+  <div class="g" id="gT"><div class="l">ТЯГА</div><div><span class="v" id="tv">0</span><span class="u">%</span></div></div>
+  <div class="g" id="gH"><div class="l">КУРС</div><div><span class="v" id="hv">0</span><span class="u">°</span></div></div>
+  <div id="gCam">КАМЕРА 1 — КАБИНА</div>
+  <div id="gTitle">FRUITFLIGHT</div>
+  <div id="crs"></div>
+  <div id="warn">⚠ СТОЛКНОВЕНИЕ ⚠</div>
+</div>
+
+<button class="mbtn" id="bUp">+</button>
+<button class="mbtn" id="bDn">−</button>
+<div id="joy"><div id="knob"></div></div>
+<button id="btnCam">📷</button>
+<button id="btnFS">⛶</button>
+<button id="btnFSDesktop" title="Fullscreen">⛶</button>
+
+<div id="load"><div class="sp"></div><div>ЗАГРУЗКА FRUITFLIGHT...</div></div>
+
+<div class="modal on" id="mStart">
+  <div class="mbox">
+    <h1>✈️ FRUITFLIGHT</h1>
+    <h2>ПИКСЕЛЬНЫЙ СИМУЛЯТОР</h2>
+    <p>
+      <b>ПК:</b> W/S — тангаж · A/D — крен · Q/E — рыскание<br>
+      SHIFT — тяга + · CTRL — тяга − · C — камера<br><br>
+      <b>Телефон:</b> джойстик + кнопки +/− · 📷 — камера<br><br>
+      <b>Цель:</b> лети над бесконечным городом. Не врежься!
+    </p>
+    <button class="btn play" id="bPlay">▶ ВЗЛЁТ</button>
+    <button class="btn fs" id="bFS">⛶ НА ВЕСЬ ЭКРАН</button>
+  </div>
+</div>
+
+<div class="modal" id="mCrash">
+  <div class="mbox">
+    <h2 style="color:#ff3030">💥 РАЗБИЛСЯ</h2>
+    <div style="background:rgba(79,195,247,.15);padding:8px;border-radius:10px;margin:8px 0;font-weight:bold;font-size:13px">ПРОЛЕТЕЛ: <span id="distVal" style="color:#0288d1">0</span> м</div>
+    <div style="background:rgba(79,195,247,.15);padding:8px;border-radius:10px;margin:8px 0;font-weight:bold;font-size:13px">ВЫСОТА: <span id="altVal2" style="color:#0288d1">0</span> м</div>
+    <button class="btn play" id="bRetry">🔄 ЗАНОВО</button>
+    <button class="btn menu" id="bMenu">🏠 В МЕНЮ</button>
+  </div>
+</div>
+
+<div id="install">
+  <h3>📲 УСТАНОВИТЬ FRUITFLIGHT?</h3>
+  <p>Работает без интернета!</p>
+  <button class="bi" id="iYes">ДА, КОНЕЧНО!</button>
+  <button class="bn" id="iNo">НЕТ, СПАСИБО</button>
+</div>
+
+<div id="toast"></div>
+
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+// ============ МОБИЛЬНАЯ ============
+const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+if (isMobile) document.body.classList.add('mobile');
+
+// ============ RENDERER ============
+const canvas = document.getElementById('canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(0.45);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0x87ceeb, 300, 1400);
+
+const camera = new THREE.PerspectiveCamera(80, innerWidth / innerHeight, 0.5, 5000);
+
+// ============ СВЕТ ============
+scene.add(new THREE.HemisphereLight(0x87ceeb, 0x66bb6a, 1.1));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6);
+sun.position.set(100, 200, 80);
+scene.add(sun);
+
+// ============ ЗЕМЛЯ ============
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(20000, 20000),
+  new THREE.MeshStandardMaterial({ color: 0x66bb6a, roughness: 0.95, flatShading: true })
+);
+ground.rotation.x = -Math.PI / 2;
+scene.add(ground);
+
+// ============ ПРОЦЕДУРНАЯ ГЕНЕРАЦИЯ ГОРОДА ============
+const BLOCK_SIZE = 200;  // размер квартала
+const CITY_RADIUS = 5;   // сколько кварталов в каждую сторону
+
+const bldgColors = [0x78909c, 0x607d8b, 0x546e7a, 0x8d6e63, 0xa1887f, 0xbcaaa4, 0x4db6ac, 0x80cbc4, 0x9575cd, 0x7986cb];
+const roofColors = [0x37474f, 0x455a64, 0x546e7a, 0x3e2723, 0x4e342e];
+const windowOnColor = 0xffd54f;
+const windowOffColor = 0x1a2a3a;
+
+// Кэш сгенерированных блоков
+const generatedBlocks = new Map(); // key = "bx,bz" → группа
+const activeBlocks = [];            // что сейчас в сцене
+const BLOCK_KEEP_RADIUS = 6;        // сколько блоков вокруг игрока держать
+
+// Материалы (переиспользуются)
+const buildingMats = {};
+const windowOnMat = new THREE.MeshBasicMaterial({ color: windowOnColor });
+const windowOffMat = new THREE.MeshBasicMaterial({ color: windowOffColor });
+
+function getBuildingMat(color) {
+  if (!buildingMats[color]) {
+    buildingMats[color] = new THREE.MeshStandardMaterial({
+      color, roughness: 0.85, flatShading: true
+    });
+  }
+  return buildingMats[color];
+}
+function getRoofMat(color) {
+  const key = 'r_' + color;
+  if (!buildingMats[key]) {
+    buildingMats[key] = new THREE.MeshStandardMaterial({
+      color, roughness: 0.9, flatShading: true
+    });
+  }
+  return buildingMats[key];
+}
+
+// Сид рандома (детерминированный по координатам)
+function seededRand(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+}
+
+// Генерирует один квартал
+function generateBlock(bx, bz) {
+  const key = bx + ',' + bz;
+  if (generatedBlocks.has(key)) return generatedBlocks.get(key);
+
+  const group = new THREE.Group();
+  const rnd = seededRand(bx * 73856093 ^ bz * 19349663);
+
+  // Центр квартала
+  const cx = bx * BLOCK_SIZE;
+  const cz = bz * BLOCK_SIZE;
+
+  // Дороги по краям квартала
+  const roadMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.9 });
+  const roadW = 25;
+  const road1 = new THREE.Mesh(new THREE.BoxGeometry(BLOCK_SIZE, 0.4, roadW), roadMat);
+  road1.position.set(cx, 0.2, cz - BLOCK_SIZE / 2);
+  group.add(road1);
+  const road2 = new THREE.Mesh(new THREE.BoxGeometry(roadW, 0.4, BLOCK_SIZE), roadMat);
+  road2.position.set(cx - BLOCK_SIZE / 2, 0.2, cz);
+  group.add(road2);
+
+  // Разметка дорог
+  const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  for (let i = -BLOCK_SIZE / 2 + 5; i < BLOCK_SIZE / 2; i += 12) {
+    const line = new THREE.Mesh(new THREE.BoxGeometry(6, 0.5, 0.8), lineMat);
+    line.position.set(cx + i, 0.45, cz - BLOCK_SIZE / 2);
+    group.add(line);
+    const line2 = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.5, 6), lineMat);
+    line2.position.set(cx - BLOCK_SIZE / 2, 0.45, cz + i);
+    group.add(line2);
+  }
+
+  // Здания внутри квартала
+  const innerSize = BLOCK_SIZE - roadW * 2;
+  const buildingRows = 3 + Math.floor(rnd() * 2);
+  const buildingCols = 3 + Math.floor(rnd() * 2);
+  const cellW = innerSize / buildingCols;
+  const cellH = innerSize / buildingRows;
+
+  for (let r = 0; r < buildingRows; r++) {
+    for (let c = 0; c < buildingCols; c++) {
+      // 15% пустых мест (парки)
+      if (rnd() < 0.15) {
+        // Дерево
+        const trunk = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.5, 0.7, 3, 5),
+          new THREE.MeshStandardMaterial({ color: 0x5d4037, flatShading: true })
+        );
+        const px = cx - innerSize / 2 + cellW * (c + 0.5);
+        const pz = cz - innerSize / 2 + cellH * (r + 0.5);
+        trunk.position.set(px, 1.5, pz);
+        group.add(trunk);
+        const crown = new THREE.Mesh(
+          new THREE.ConeGeometry(3, 6, 6),
+          new THREE.MeshStandardMaterial({ color: 0x2e7d32, flatShading: true })
+        );
+        crown.position.set(px, 6, pz);
+        group.add(crown);
+        continue;
+      }
+
+      const w = cellW * (0.55 + rnd() * 0.3);
+      const d = cellH * (0.55 + rnd() * 0.3);
+      const h = 15 + rnd() * 70 + (rnd() < 0.1 ? 50 : 0); // иногда небоскрёбы
+
+      const color = bldgColors[Math.floor(rnd() * bldgColors.length)];
+      const bldg = new THREE.Mesh(
+        new THREE.BoxGeometry(w, h, d),
+        getBuildingMat(color)
+      );
+      const bx2 = cx - innerSize / 2 + cellW * (c + 0.5);
+      const bz2 = cz - innerSize / 2 + cellH * (r + 0.5);
+      bldg.position.set(bx2, h / 2, bz2);
+      group.add(bldg);
+
+      // Крыша
+      const roofColor = roofColors[Math.floor(rnd() * roofColors.length)];
+      const roof = new THREE.Mesh(
+        new THREE.BoxGeometry(w * 1.02, 1.5, d * 1.02),
+        getRoofMat(roofColor)
+      );
+      roof.position.set(bx2, h + 0.75, bz2);
+      group.add(roof);
+
+      // Окна — только на верхних 3/4 (не на первом этаже)
+      const floors = Math.floor(h / 5);
+      const colsX = Math.floor(w / 4);
+      const colsZ = Math.floor(d / 4);
+
+      // Передняя грань (в +Z)
+      for (let f = 1; f < floors; f++) {
+        for (let cc = 0; cc < colsX; cc++) {
+          if (rnd() < 0.35) { // 35% окон светится
+            const win = new THREE.Mesh(
+              new THREE.BoxGeometry(2, 2.2, 0.2),
+              windowOnMat
+            );
+            win.position.set(
+              bx2 - w / 2 + 2 + cc * 4,
+              f * 5,
+              bz2 + d / 2 + 0.1
+            );
+            group.add(win);
+          } else if (rnd() < 0.5) {
+            const win = new THREE.Mesh(
+              new THREE.BoxGeometry(2, 2.2, 0.2),
+              windowOffMat
+            );
+            win.position.set(
+              bx2 - w / 2 + 2 + cc * 4,
+              f * 5,
+              bz2 + d / 2 + 0.1
+            );
+            group.add(win);
+          }
+        }
+      }
+
+      // Грань в -Z
+      for (let f = 1; f < floors; f++) {
+        for (let cc = 0; cc < colsX; cc++) {
+          if (rnd() < 0.35) {
+            const win = new THREE.Mesh(new THREE.BoxGeometry(2, 2.2, 0.2), windowOnMat);
+            win.position.set(bx2 - w / 2 + 2 + cc * 4, f * 5, bz2 - d / 2 - 0.1);
+            group.add(win);
+          }
+        }
+      }
+
+      // Грань в +X
+      for (let f = 1; f < floors; f++) {
+        for (let cc = 0; cc < colsZ; cc++) {
+          if (rnd() < 0.35) {
+            const win = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2.2, 2), windowOnMat);
+            win.position.set(bx2 + w / 2 + 0.1, f * 5, bz2 - d / 2 + 2 + cc * 4);
+            group.add(win);
+          }
+        }
+      }
+
+      // Грань в -X
+      for (let f = 1; f < floors; f++) {
+        for (let cc = 0; cc < colsZ; cc++) {
+          if (rnd() < 0.35) {
+            const win = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2.2, 2), windowOnMat);
+            win.position.set(bx2 - w / 2 - 0.1, f * 5, bz2 - d / 2 + 2 + cc * 4);
+            group.add(win);
+          }
+        }
+      }
+    }
+  }
+
+  // Антенна на самом высоком здании квартала (редко)
+  if (rnd() < 0.3) {
+    const antennaH = 20 + rnd() * 30;
+    const antenna = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.3, 0.3, antennaH, 5),
+      new THREE.MeshStandardMaterial({ color: 0x333333 })
+    );
+    antenna.position.set(cx, 50 + antennaH / 2, cz);
+    group.add(antenna);
+  }
+
+  generatedBlocks.set(key, group);
+  return group;
+}
+
+// Обновление видимых блоков вокруг игрока
+function updateCity(playerX, playerZ) {
+  const px = Math.floor(playerX / BLOCK_SIZE);
+  const pz = Math.floor(playerZ / BLOCK_SIZE);
+
+  // Какие блоки должны быть в сцене
+  const shouldHave = new Set();
+  for (let bx = px - BLOCK_KEEP_RADIUS; bx <= px + BLOCK_KEEP_RADIUS; bx++) {
+    for (let bz = pz - BLOCK_KEEP_RADIUS; bz <= pz + BLOCK_KEEP_RADIUS; bz++) {
+      shouldHave.add(bx + ',' + bz);
+    }
+  }
+
+  // Удаляем далёкие
+  for (let i = activeBlocks.length - 1; i >= 0; i--) {
+    const b = activeBlocks[i];
+    if (!shouldHave.has(b.key)) {
+      scene.remove(b.group);
+      activeBlocks.splice(i, 1);
+    }
+  }
+
+  // Добавляем новые (только в ближнем радиусе, чтобы не лагало)
+  const activeKeys = new Set(activeBlocks.map(b => b.key));
+  for (const key of shouldHave) {
+    if (activeKeys.has(key)) continue;
+    const [bx, bz] = key.split(',').map(Number);
+    // Генерируем только в радиусе 3 (иначе слишком много за раз)
+    if (Math.abs(bx - px) > 3 || Math.abs(bz - pz) > 3) continue;
+    const group = generateBlock(bx, bz);
+    // Уже мог быть в сцене ранее? Проверим
+    if (!group.parent) scene.add(group);
+    activeBlocks.push({ key, group });
+  }
+}
+
+// Стартовый город вокруг центра
+updateCity(0, 0);
+
+// ============ ГОРЫ вдалеке ============
+for (let i = 0; i < 20; i++) {
+  const angle = (i / 20) * Math.PI * 2;
+  const dist = 3000 + Math.random() * 500;
+  const x = Math.cos(angle) * dist;
+  const z = Math.sin(angle) * dist;
+  const h = 200 + Math.random() * 300;
+  const mtn = new THREE.Mesh(
+    new THREE.ConeGeometry(120 + Math.random() * 80, h, 5),
+    new THREE.MeshStandardMaterial({ color: 0x607d8b, roughness: 0.95, flatShading: true })
+  );
+  mtn.position.set(x, h / 2 - 30, z);
+  scene.add(mtn);
+  const cap = new THREE.Mesh(
+    new THREE.ConeGeometry(60, h * 0.22, 5),
+    new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.7, flatShading: true })
+  );
+  cap.position.set(x, h - h * 0.11, z);
+  scene.add(cap);
+}
+
+// ============ ОБЛАКА ============
+const clouds = [];
+const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, flatShading: true });
+for (let i = 0; i < 50; i++) {
+  const g = new THREE.Group();
+  for (let j = 0; j < 4; j++) {
+    const puff = new THREE.Mesh(new THREE.SphereGeometry(10 + Math.random() * 10, 5, 4), cloudMat);
+    puff.position.set((Math.random() - 0.5) * 25, (Math.random() - 0.5) * 6, (Math.random() - 0.5) * 25);
+    g.add(puff);
+  }
+  g.position.set((Math.random() - 0.5) * 4000, 120 + Math.random() * 200, (Math.random() - 0.5) * 4000);
+  scene.add(g);
+  clouds.push(g);
+}
+
+// ============ САМОЛЁТ ============
+const plane = new THREE.Group();
+
+const whiteMat = new THREE.MeshStandardMaterial({ color: 0xf5f5f5, roughness: 0.5, flatShading: true });
+const redMat = new THREE.MeshStandardMaterial({ color: 0xef5350, roughness: 0.5, flatShading: true });
+const darkMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.6, flatShading: true });
+const glassMat = new THREE.MeshStandardMaterial({ color: 0x88ccff, transparent: true, opacity: 0.35, roughness: 0.1, metalness: 0.5 });
+
+const fuselage = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 6), whiteMat);
+plane.add(fuselage);
+
+const noseMesh = new THREE.Mesh(new THREE.ConeGeometry(0.7, 1.8, 6), redMat);
+noseMesh.rotation.x = -Math.PI / 2;
+noseMesh.position.z = -3.9;
+plane.add(noseMesh);
+
+const wingMesh = new THREE.Mesh(new THREE.BoxGeometry(10, 0.18, 1.5), whiteMat);
+wingMesh.position.set(0, 0.15, 0.3);
+plane.add(wingMesh);
+
+const tailH = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.15, 1), whiteMat);
+tailH.position.set(0, 0.3, 2.8);
+plane.add(tailH);
+
+const tailV = new THREE.Mesh(new THREE.BoxGeometry(1, 1.5, 0.15), redMat);
+tailV.position.set(0, 0.95, 2.8);
+plane.add(tailV);
+
+const prop = new THREE.Group();
+prop.position.z = -4.9;
+const blade1 = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.08, 0.2), darkMat);
+prop.add(blade1);
+const blade2 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.8, 0.2), darkMat);
+prop.add(blade2);
+plane.add(prop);
+
+const canopy = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1, 2), glassMat);
+canopy.position.set(0, 0.7, 0.5);
+plane.add(canopy);
+
+scene.add(plane);
+
+// ============ СОСТОЯНИЕ ============
+const ac = {
+  pos: new THREE.Vector3(0, 80, 0),
+  quat: new THREE.Quaternion(),
+  throttle: 0.7,
+  speed: 45,
+  running: false,
+  crashed: false,
+  cameraMode: 0,
+  distance: 0,
+};
+
+const camNames = ['КАБИНА', 'СЗАДИ', 'КРЫЛО', 'ОРБИТА'];
+const CAM_COUNT = 4;
+
+// ============ АУДИО ============
+let audioCtx = null, engineOsc = null, engineOsc2 = null, engineGain = null, engineFilter = null;
+function initAudio() {
+  if (audioCtx) return;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    engineGain = audioCtx.createGain();
+    engineGain.gain.value = 0;
+    engineFilter = audioCtx.createBiquadFilter();
+    engineFilter.type = 'lowpass';
+    engineFilter.frequency.value = 800;
+    engineFilter.connect(engineGain);
+    engineGain.connect(audioCtx.destination);
+
+    engineOsc = audioCtx.createOscillator();
+    engineOsc.type = 'sawtooth';
+    engineOsc.frequency.value = 60;
+    engineOsc.connect(engineFilter);
+    engineOsc.start();
+
+    engineOsc2 = audioCtx.createOscillator();
+    engineOsc2.type = 'square';
+    engineOsc2.frequency.value = 120;
+    const g2 = audioCtx.createGain();
+    g2.gain.value = 0.25;
+    engineOsc2.connect(g2);
+    g2.connect(engineFilter);
+    engineOsc2.start();
+  } catch(e) {}
+}
+function updateEngineSound() {
+  if (!audioCtx || !engineOsc) return;
+  const baseFreq = 40 + ac.throttle * 80 + ac.speed * 0.3;
+  engineOsc.frequency.setTargetAtTime(baseFreq, audioCtx.currentTime, 0.1);
+  engineOsc2.frequency.setTargetAtTime(baseFreq * 2, audioCtx.currentTime, 0.1);
+  engineGain.gain.setTargetAtTime(ac.running && !ac.crashed ? 0.07 + ac.throttle * 0.08 : 0, audioCtx.currentTime, 0.2);
+  engineFilter.frequency.setTargetAtTime(400 + ac.throttle * 1200, audioCtx.currentTime, 0.1);
+}
+
+// ============ УПРАВЛЕНИЕ ============
+const keys = {};
+addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (e.code === 'KeyC') switchCamera();
+  if (e.code === 'Space') e.preventDefault();
+  if (e.code === 'KeyF') toggleFullscreen();
+});
+addEventListener('keyup', e => keys[e.code] = false);
+
+function switchCamera() {
+  ac.cameraMode = (ac.cameraMode + 1) % CAM_COUNT;
+  document.getElementById('gCam').textContent = 'КАМЕРА ' + (ac.cameraMode + 1) + ' — ' + camNames[ac.cameraMode];
+  showToast('📷 ' + camNames[ac.cameraMode]);
+}
+document.getElementById('btnCam').onclick = switchCamera;
+
+// Fullscreen
+function toggleFullscreen() {
+  const el = document.documentElement;
+  if (!document.fullscreenElement) {
+    if (el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else showToast('F11 для фуллскрина');
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
+}
+document.getElementById('btnFS').onclick = toggleFullscreen;
+document.getElementById('btnFSDesktop').onclick = toggleFullscreen;
+document.getElementById('bFS').onclick = () => {
+  toggleFullscreen();
+  setTimeout(startGame, 200);
+};
+
+// Джойстик
+const joy = document.getElementById('joy');
+const knob = document.getElementById('knob');
+let joyAct = false, joyId = null, joyC = {x:0,y:0}, joyV = {x:0,y:0};
+function jStart(e) {
+  e.preventDefault();
+  const t = e.changedTouches ? e.changedTouches[0] : e;
+  joyAct = true; joyId = t.identifier;
+  const r = joy.getBoundingClientRect();
+  joyC = {x: r.left + r.width/2, y: r.top + r.height/2};
+  jMove(e);
+}
+function jMove(e) {
+  if (!joyAct) return;
+  e.preventDefault();
+  let t = e;
+  if (e.changedTouches) for (const tt of e.changedTouches) if (tt.identifier === joyId) { t = tt; break; }
+  const dx = t.clientX - joyC.x, dy = t.clientY - joyC.y;
+  const max = 50;
+  const d = Math.hypot(dx, dy);
+  const cd = Math.min(d, max);
+  const nx = d > 0 ? (dx/d)*cd : 0;
+  const ny = d > 0 ? (dy/d)*cd : 0;
+  joyV.x = nx/max; joyV.y = ny/max;
+  knob.style.transform = `translate(calc(-50% + ${nx}px), calc(-50% + ${ny}px))`;
+}
+function jEnd() { joyAct = false; joyV.x = 0; joyV.y = 0; knob.style.transform = 'translate(-50%,-50%)'; }
+joy.addEventListener('touchstart', jStart, {passive:false});
+joy.addEventListener('touchmove', jMove, {passive:false});
+joy.addEventListener('touchend', jEnd);
+
+let bUp = false, bDn = false;
+const btnU = document.getElementById('bUp');
+const btnD = document.getElementById('bDn');
+btnU.addEventListener('touchstart', e => { e.preventDefault(); bUp = true; }, {passive:false});
+btnU.addEventListener('touchend', () => bUp = false);
+btnU.addEventListener('mousedown', () => bUp = true);
+btnU.addEventListener('mouseup', () => bUp = false);
+btnD.addEventListener('touchstart', e => { e.preventDefault(); bDn = true; }, {passive:false});
+btnD.addEventListener('touchend', () => bDn = false);
+btnD.addEventListener('mousedown', () => bDn = true);
+btnD.addEventListener('mouseup', () => bDn = false);
+
+// ============ ФИЗИКА ============
+const tmpQuat = new THREE.Quaternion();
+const forward = new THREE.Vector3();
+
+function updatePhysics(dt) {
+  if (ac.crashed) return;
+
+  let pitchIn, rollIn, yawIn;
+  if (isMobile) {
+    pitchIn = -joyV.y;
+    rollIn = -joyV.x;
+    yawIn = 0;
+  } else {
+    pitchIn = (keys['KeyW'] ? 1 : 0) + (keys['KeyS'] ? -1 : 0);
+    rollIn = (keys['KeyA'] ? 1 : 0) + (keys['KeyD'] ? -1 : 0);
+    yawIn = (keys['KeyQ'] ? 1 : 0) + (keys['KeyE'] ? -1 : 0);
+  }
+
+  if (keys['ShiftLeft'] || keys['ShiftRight'] || bUp) ac.throttle = Math.min(1, ac.throttle + dt * 0.6);
+  if (keys['ControlLeft'] || keys['ControlRight'] || bDn) ac.throttle = Math.max(0, ac.throttle - dt * 0.6);
+
+  const pitchRate = pitchIn * 1.2 * dt;
+  const rollRate = rollIn * 2.0 * dt;
+  const yawRate = yawIn * 0.8 * dt;
+
+  tmpQuat.setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitchRate);
+  ac.quat.multiply(tmpQuat);
+  tmpQuat.setFromAxisAngle(new THREE.Vector3(0, 0, 1), rollRate);
+  ac.quat.multiply(tmpQuat);
+  tmpQuat.setFromAxisAngle(new THREE.Vector3(0, 1, 0), yawRate);
+  ac.quat.multiply(tmpQuat);
+  ac.quat.normalize();
+
+  forward.set(0, 0, -1).applyQuaternion(ac.quat);
+
+  const thrustSpeed = 20 + ac.throttle * 80;
+  ac.speed += (thrustSpeed - ac.speed) * dt * 0.4;
+  ac.speed += -forward.y * 20 * dt;
+  ac.speed = Math.max(8, Math.min(120, ac.speed));
+
+  ac.pos.addScaledVector(forward, ac.speed * dt);
+
+  ac.distance = Math.max(ac.distance, Math.hypot(ac.pos.x, ac.pos.z));
+
+  if (ac.pos.y < 3) {
+    crash();
+    return;
+  }
+
+  prop.rotation.z += (ac.throttle * 40 + 10) * dt;
+
+  plane.position.copy(ac.pos);
+  plane.quaternion.copy(ac.quat);
+
+  // Обновляем город вокруг игрока
+  updateCity(ac.pos.x, ac.pos.z);
+}
+
+// ============ КРУШЕНИЕ ============
+const explosionParts = [];
+function crash() {
+  if (ac.crashed) return;
+  ac.crashed = true;
+  ac.running = false;
+
+  const geo = new THREE.SphereGeometry(1.5, 8, 8);
+  for (let i = 0; i < 50; i++) {
+    const p = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+      color: [0xff3030, 0xff8800, 0xffff00][Math.floor(Math.random()*3)]
+    }));
+    p.position.copy(ac.pos);
+    p.userData = {
+      vx: (Math.random() - 0.5) * 60,
+      vy: Math.random() * 40 + 10,
+      vz: (Math.random() - 0.5) * 60,
+      life: 2,
+    };
+    scene.add(p);
+    explosionParts.push(p);
+  }
+
+  try {
+    if (audioCtx) {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(200, audioCtx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.8);
+      g.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + 0.8);
+    }
+  } catch(e) {}
+
+  plane.visible = false;
+  document.getElementById('distVal').textContent = Math.round(ac.distance);
+  document.getElementById('altVal2').textContent = Math.round(Math.max(0, ac.pos.y));
+  setTimeout(() => document.getElementById('mCrash').classList.add('on'), 1800);
+  showToast('💥 РАЗБИЛСЯ!');
+}
+
+// ============ КАМЕРА ============
+const camOffset = new THREE.Vector3();
+const camLookOffset = new THREE.Vector3();
+
+function updateCamera() {
+  if (ac.crashed) {
+    camera.position.copy(ac.pos).add(new THREE.Vector3(15, 10, 15));
+    camera.lookAt(ac.pos);
+    return;
+  }
+
+  if (ac.cameraMode === 0) {
+    camOffset.set(0, 0.85, 1.5);
+    camLookOffset.set(0, 0, -20);
+  } else if (ac.cameraMode === 1) {
+    camOffset.set(0, 4, 12);
+    camLookOffset.set(0, 0, 0);
+  } else if (ac.cameraMode === 2) {
+    camOffset.set(5, 1, 0.5);
+    camLookOffset.set(0, 0, -10);
+  } else {
+    const t = performance.now() * 0.0005;
+    camOffset.set(Math.cos(t) * 15, 5, Math.sin(t) * 15);
+    camLookOffset.set(0, 0, 0);
+  }
+
+  const worldOffset = camOffset.clone().applyQuaternion(ac.quat);
+  camera.position.copy(ac.pos).add(worldOffset);
+
+  const worldLook = camLookOffset.clone().applyQuaternion(ac.quat).add(camera.position);
+  camera.lookAt(worldLook);
+}
+
+// ============ HUD ============
+function updateHUD() {
+  document.getElementById('sv').textContent = Math.round(ac.speed * 3.6);
+  document.getElementById('av').textContent = Math.round(Math.max(0, ac.pos.y));
+  document.getElementById('tv').textContent = Math.round(ac.throttle * 100);
+  const f = new THREE.Vector3(0, 0, -1).applyQuaternion(ac.quat);
+  let heading = Math.atan2(f.x, f.z) * 180 / Math.PI;
+  if (heading < 0) heading += 360;
+  document.getElementById('hv').textContent = Math.round(heading);
+  const warn = document.getElementById('warn');
+  if (ac.running && ac.pos.y < 30 && !ac.crashed) warn.classList.add('on');
+  else warn.classList.remove('on');
+  updateEngineSound();
+}
+
+function showToast(t) {
+  const el = document.getElementById('toast');
+  el.textContent = t;
+  el.classList.add('on');
+  setTimeout(() => el.classList.remove('on'), 1400);
+}
+
+// ============ ОБЛАКА ============
+function updateClouds() {
+  for (const c of clouds) {
+    if (c.position.distanceTo(ac.pos) > 3500) {
+      c.position.x = ac.pos.x + (Math.random() - 0.5) * 4000;
+      c.position.z = ac.pos.z + (Math.random() - 0.5) * 4000;
+      c.position.y = 120 + Math.random() * 200;
+    }
+  }
+}
+
+// ============ ВЗРЫВ ============
+function updateExplosion(dt) {
+  for (let i = explosionParts.length - 1; i >= 0; i--) {
+    const p = explosionParts[i];
+    p.position.x += p.userData.vx * dt;
+    p.position.y += p.userData.vy * dt;
+    p.position.z += p.userData.vz * dt;
+    p.userData.vy -= 60 * dt;
+    p.userData.life -= dt;
+    p.scale.setScalar(Math.max(0.1, p.userData.life));
+    if (p.userData.life <= 0) {
+      scene.remove(p);
+      explosionParts.splice(i, 1);
+    }
+  }
+}
+
+// ============ ЦИКЛ ============
+let lastT = performance.now();
+function loop(now) {
+  requestAnimationFrame(loop);
+  const dt = Math.min((now - lastT) / 1000, 0.05);
+  lastT = now;
+
+  if (ac.running) {
+    updatePhysics(dt);
+    updateClouds();
+  }
+  updateExplosion(dt);
+  updateCamera();
+  updateHUD();
+
+  renderer.render(scene, camera);
+}
+
+addEventListener('resize', () => {
+  renderer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+});
+
+// ============ СТАРТ ============
+function startGame() {
+  initAudio();
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  for (const p of explosionParts) scene.remove(p);
+  explosionParts.length = 0;
+
+  ac.pos.set(0, 100, 0);
+  ac.quat.identity();
+  ac.throttle = 0.8;
+  ac.speed = 50;
+  ac.running = true;
+  ac.crashed = false;
+  ac.distance = 0;
+  ac.cameraMode = 0;
+  plane.visible = true;
+  plane.position.copy(ac.pos);
+  plane.quaternion.copy(ac.quat);
+  document.getElementById('gCam').textContent = 'КАМЕРА 1 — КАБИНА';
+  document.getElementById('mStart').classList.remove('on');
+  document.getElementById('mCrash').classList.remove('on');
+  showToast('✈️ FRUITFLIGHT');
+}
+
+document.getElementById('bPlay').onclick = startGame;
+document.getElementById('bRetry').onclick = startGame;
+document.getElementById('bMenu').onclick = () => {
+  document.getElementById('mCrash').classList.remove('on');
+  document.getElementById('mStart').classList.add('on');
+};
+
+// ============ PWA ============
+let deferredPrompt = null;
+addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (!localStorage.getItem('fruitflight_install_no')) {
+    setTimeout(() => document.getElementById('install').style.display = 'block', 2000);
+  }
+});
+document.getElementById('iYes').onclick = async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+  } else if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+    showToast('Safari → Поделиться → На экран Домой');
+  } else {
+    showToast('Меню браузера → Установить');
+  }
+  document.getElementById('install').style.display = 'none';
+};
+document.getElementById('iNo').onclick = () => {
+  localStorage.setItem('fruitflight_install_no', '1');
+  document.getElementById('install').style.display = 'none';
+};
+
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  const swCode = `const C='fruitflight-v1';
+self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./','./index.html'])));self.skipWaiting();});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))));self.clients.claim();});
+self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(e.request.method==='GET'&&res.status===200){const cl=res.clone();caches.open(C).then(c=>c.put(e.request,cl));}return res;}).catch(()=>caches.match('./index.html'))));});`;
+  const blob = new Blob([swCode], { type: 'text/javascript' });
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+}
+
+setTimeout(() => document.getElementById('load').style.display = 'none', 600);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
